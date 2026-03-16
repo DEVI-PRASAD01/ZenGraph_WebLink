@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* If you need to include the tw-animate-css package styles, import them here. */
+@import 'tw-animate-css';

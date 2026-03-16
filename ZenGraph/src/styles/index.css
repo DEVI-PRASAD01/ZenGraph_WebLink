@@ -1,0 +1,13 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Hide scrollbar inside phone frame */
+#phone-screen::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scrolling within phone frame */
+#phone-screen {
+  -webkit-overflow-scrolling: touch;
+}
