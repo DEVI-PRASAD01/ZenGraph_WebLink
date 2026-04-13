@@ -31,7 +31,7 @@ export default function MeditationPlayer() {
     try {
       // Call backend with actual duration immediately
       if (sessionId) {
-        await fetch(`http://localhost:8000/session/complete/${sessionId}`, {
+        await fetch(`http://180.235.121.253:8134/session/complete/${sessionId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Flame, UserPlus, Check, Users, Bell, Loader2, AlertCircle } from "lucide-react";
 import { sessionHelper } from "../services/sessionApi";
 
-const API = "http://localhost:8000";
+const API = "http://180.235.121.253:8134";
 
 interface Friend {
   user_id: number;

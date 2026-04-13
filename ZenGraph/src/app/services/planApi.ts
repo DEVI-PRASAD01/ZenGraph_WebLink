@@ -2,7 +2,7 @@
 import { api } from "./config";
 import type { AIPlan } from "./sessionApi";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://180.235.121.253:8134";
 
 export const planApi = {
   // Methods requested by user

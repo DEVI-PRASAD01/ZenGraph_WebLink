@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "http://180.235.121.253:8134";
 
 export interface ProfileData {
   id: number;
