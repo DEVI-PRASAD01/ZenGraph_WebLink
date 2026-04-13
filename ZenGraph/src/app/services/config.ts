@@ -1,9 +1,12 @@
-export const API_BASE = "http://127.0.0.1:8000";
+export const API_BASE = "http://180.235.121.253:8134";
 
 async function request(url: string, options?: RequestInit) {
+    const token = localStorage.getItem("zg_token") ?? "";
+
     const res = await fetch(url, {
         headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...options?.headers,
         },
         credentials: "include",
@@ -43,14 +46,15 @@ export const api = {
         request(`${API_BASE}${path}`, {
             method: "DELETE",
         }),
-    // For file uploads
-    upload: (path: string, formData: FormData) =>
-        fetch(`${API_BASE}${path}`, {
+    upload: (path: string, formData: FormData) => {
+        const token = localStorage.getItem("zg_token") ?? "";
+        return fetch(`${API_BASE}${path}`, {
             method: "POST",
             body: formData,
-            // Note: Do not set Content-Type header, fetch will set it with boundary
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
         }).then(async res => {
             if (!res.ok) throw new Error("Upload failed");
             return res.json();
-        }),
+        });
+    },
 };

@@ -4,7 +4,6 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { TrendingUp, Flame, Clock, Brain, Lock, Loader2, AlertCircle, RefreshCw } from "lucide-react";
-import { useSubscription } from "../hooks/useSubscription";
 import { useNavigate } from "react-router";
 import { analyticsApi, sessionHelper, type Period, type EmotionPoint, type CompletionMap } from "../services/sessionApi";
 
@@ -24,7 +23,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Analytics() {
-  const { isPremium } = useSubscription();
   const navigate = useNavigate();
 
   const userId = Number(sessionHelper.getUserId() ?? 1);
@@ -210,27 +208,8 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* AI Insights Section (premium) */}
+      {/* AI Insights Section */}
       <div className="bg-gray-900 rounded-[56px] p-12 text-white shadow-3xl relative overflow-hidden">
-        {!isPremium && (
-          <div className="absolute inset-0 z-20 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-8">
-            <div className="bg-white rounded-[40px] p-10 max-w-lg w-full text-center shadow-2xl">
-              <div className="w-20 h-20 rounded-3xl bg-indigo-50 flex items-center justify-center mb-6 mx-auto">
-                <Lock size={36} className="text-[#6F7BF7]" />
-              </div>
-              <h3 className="text-3xl font-black text-[#1F2933] mb-4">Unlock Intelligent Insights</h3>
-              <p className="text-gray-500 font-medium mb-8 leading-relaxed">
-                Our advanced AI analyzes your biometric trends to provide personalized wellness breakthroughs. Available exclusively for Zen Pro members.
-              </p>
-              <button
-                onClick={() => navigate("/app/subscription/plans")}
-                className="w-full py-5 rounded-[24px] bg-[#6F7BF7] text-white font-black text-lg hover:scale-[1.02] transition-transform shadow-xl shadow-indigo-100"
-              >
-                Upgrade to Zen Pro
-              </button>
-            </div>
-          </div>
-        )}
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#6F7BF7]/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>

@@ -27,12 +27,17 @@ export default function AIProgress() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!sessionId) { setLoading(false); return; }
-    sessionAnalysisApi.get(sessionId)
-      .then(setAnalysis)
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Could not load analysis."))
-      .finally(() => setLoading(false));
+      if (!sessionId) { setLoading(false); return; }
+      sessionAnalysisApi.analyze({
+          pre_emotion: sessionStorage.getItem("zg_emotion") ?? "Neutral",
+          post_mood: sessionStorage.getItem("zg_mood_after") ?? "Neutral",
+          duration: Number(sessionStorage.getItem("zg_actual_mins") ?? sessionStorage.getItem("zg_session_mins") ?? 10)
+     })
+     .then(setAnalysis)
+     .catch((err: unknown) => setError(err instanceof Error ? err.message : "Could not load analysis."))
+     .finally(() => setLoading(false));
   }, [sessionId]);
+
 
   // Map descriptive strings to percentages for the charts
   const mapValue = (label: string | undefined) => {

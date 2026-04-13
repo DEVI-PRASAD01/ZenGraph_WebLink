@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Pause, Play, RotateCcw, Volume2, VolumeX, ChevronLeft, SkipForward, Loader2 } from "lucide-react";
-import { sessionApi } from "../services/sessionApi";
 
 const phases = ["Guided Breathing", "Body Scan", "Nature Sounds", "Mindfulness"];
 const phaseColors = ["#6F7BF7", "#4AAFA9", "#8B5CF6", "#F97316"];
@@ -9,12 +8,11 @@ const phaseColors = ["#6F7BF7", "#4AAFA9", "#8B5CF6", "#F97316"];
 export default function MeditationPlayer() {
   const navigate = useNavigate();
 
-  // Read real session data from sessionStorage
   const sessionName = sessionStorage.getItem("zg_session_name") ?? "Zen Harmony";
   const sessionMins = Number(sessionStorage.getItem("zg_session_mins") ?? 10);
-  const TOTAL = sessionMins * 60; // convert planned minutes to seconds
-
+  const TOTAL = sessionMins * 60;
   const sessionId = Number(sessionStorage.getItem("zg_session_id") ?? 0);
+
   const [timeLeft, setTimeLeft] = useState(TOTAL);
   const [isPlaying, setIsPlaying] = useState(true);
   const [finishing, setFinishing] = useState(false);
@@ -24,16 +22,32 @@ export default function MeditationPlayer() {
   const handleComplete = async () => {
     if (finishing) return;
     setFinishing(true);
+
+    // Calculate actual elapsed time
+    const elapsedSeconds = TOTAL - timeLeft;
+    const elapsedMins = Math.max(1, Math.round(elapsedSeconds / 60));
+    sessionStorage.setItem("zg_actual_mins", String(elapsedMins));
+
     try {
+      // Call backend with actual duration immediately
       if (sessionId) {
-        await sessionApi.complete({ session_id: sessionId });
+        await fetch(`http://localhost:8000/session/complete/${sessionId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            mood_after: sessionStorage.getItem("zg_mood") ?? "Neutral",
+            actual_duration: elapsedMins,
+            notes: ""
+          })
+        });
       }
-      navigate("/session/complete");
     } catch (err) {
-      console.error("Failed to complete session:", err);
-      navigate("/session/complete"); // Still navigate even if API fails
+      console.error("Failed to complete session on backend:", err);
+      // Still navigate even if API fails
     } finally {
       setFinishing(false);
+      navigate("/session/complete");
     }
   };
 
@@ -53,7 +67,7 @@ export default function MeditationPlayer() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isPlaying, navigate, TOTAL, sessionId]);
+  }, [isPlaying, TOTAL]);
 
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const seconds = String(timeLeft % 60).padStart(2, "0");

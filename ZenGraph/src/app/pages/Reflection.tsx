@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Zap, Loader2 } from "lucide-react";
-import { checkInApi, sessionHelper } from "../services/sessionApi";
+import { sessionApi } from "../services/sessionApi";
 
 const moods = [
   { emoji: "😌", label: "Calm" },
@@ -14,7 +14,7 @@ const moods = [
 
 export default function Reflection() {
   const navigate = useNavigate();
-  const userId = Number(sessionHelper.getUserId() ?? 1);
+
   const sessionId = Number(sessionStorage.getItem("zg_session_id") ?? 0);
 
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -26,20 +26,31 @@ export default function Reflection() {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Try to submit checkin — if endpoint unavailable, skip silently
       if (selectedMood) {
-        await checkInApi.submit({
-          user_id: userId,
-          session_id: sessionId || undefined,
+        sessionStorage.setItem("zg_mood_after", selectedMood);
+      }
+
+      // Use actual elapsed time, NOT planned duration
+      const actualMins = Number(
+        sessionStorage.getItem("zg_actual_mins") ??
+        sessionStorage.getItem("zg_session_mins") ??
+        5
+      );
+
+      if (selectedMood && sessionId) {
+        await sessionApi.complete(sessionId, {
           mood_after: selectedMood,
           notes: notes.trim() || undefined,
+          actual_duration: actualMins,
         });
       }
-    } catch {
-      // /session/checkin not available — silently ignore and navigate
+
+      navigate("/session/analysis");
+    } catch (err) {
+      console.error("Failed to save reflection:", err);
+      navigate("/session/analysis");
     } finally {
       setLoading(false);
-      goNext();
     }
   };
 
@@ -68,10 +79,11 @@ export default function Reflection() {
               <button
                 key={m.label}
                 onClick={() => setSelectedMood(m.label)}
-                className={`group p-8 rounded-[40px] border-2 transition-all duration-300 text-center ${selectedMood === m.label
-                  ? "bg-white border-[#6F7BF7] shadow-2xl shadow-indigo-100 scale-105"
-                  : "bg-white border-gray-50 hover:border-gray-100 hover:bg-gray-50"
-                  }`}
+                className={`group p-8 rounded-[40px] border-2 transition-all duration-300 text-center ${
+                  selectedMood === m.label
+                    ? "bg-white border-[#6F7BF7] shadow-2xl shadow-indigo-100 scale-105"
+                    : "bg-white border-gray-50 hover:border-gray-100 hover:bg-gray-50"
+                }`}
               >
                 <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-500">{m.emoji}</div>
                 <p className="font-black text-[#1F2933] tracking-tight">{m.label}</p>

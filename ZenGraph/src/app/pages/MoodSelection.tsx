@@ -36,7 +36,7 @@ export default function MoodSelection() {
         mood: selectedMood,
         thought: note.trim() || undefined,
       });
-      sessionStorage.setItem("zg_emotion", aiResult.predicted_emotion);
+      sessionStorage.setItem("zg_emotion", selectedMood);
       sessionStorage.setItem("zg_confidence", String(aiResult.confidence));
       setPredicted({ emotion: aiResult.predicted_emotion, confidence: aiResult.confidence });
       // Small pause to show the AI result badge, then navigate

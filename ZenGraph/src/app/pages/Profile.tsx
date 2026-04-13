@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { profileApi, sessionHelper, type ProfileData } from "../services/sessionApi";
+import { profileApi, type ProfileData } from "../services/profileApi";
 import {
   ChevronRight,
   Zap,
@@ -19,37 +19,41 @@ import {
 const PROFILE_IMG =
   "https://images.unsplash.com/photo-1759873911661-d4cba84d2eff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMG1lZGl0YXRpbmclMjBzZXJlbmUlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NzI3ODA2MDZ8MA&ixlib=rb-4.1.0&q=80&w=400";
 
-const achievements = [
-  { emoji: "🔥", label: "7-Day Streak", unlocked: true },
-  { emoji: "🧘", label: "Zen Master", unlocked: true },
-  { emoji: "🌙", label: "Night Owl", unlocked: false },
-  { emoji: "⚡", label: "Speed Meditator", unlocked: false },
-];
+
 
 export default function Profile() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState("Alex Johnson");
+  const [name, setName] = useState("");
   const [role, setRole] = useState("INTERMEDIATE MEDITATOR");
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
-  const USER_ID = Number(sessionHelper.getUserId() ?? 1);
+  const USER_ID = Number(localStorage.getItem("user_id"));
+  console.log("USER_ID:", USER_ID);
 
   useEffect(() => {
     const loadProfile = async () => {
+      if (!USER_ID || isNaN(USER_ID)) {
+        console.error("Invalid USER_ID");
+        setLoading(false);
+        return;
+      }
       try {
         const data = await profileApi.fetch(USER_ID);
         setProfile(data);
         setName(data.name);
       } catch (err) {
-        console.error("Error loading profile:", err);
+        console.error("Profile: Error loading profile:", err);
+      } finally {
+        setLoading(false);
       }
     };
     loadProfile();
-  }, []);
+  }, [USER_ID]);
 
   // Set local state from profile once loaded
   const [notifications, setNotifications] = useState(true);
@@ -137,6 +141,12 @@ export default function Profile() {
     </button>
   );
 
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="text-2xl font-black text-[#6F7BF7] animate-pulse">Loading Profile...</div>
+    </div>
+  );
+
   return (
     <div
       className="p-8 lg:p-12 max-w-7xl mx-auto flex flex-col gap-10"
@@ -206,7 +216,8 @@ export default function Profile() {
               </div>
             ) : (
               <>
-                <h2 className="text-3xl font-black text-[#1F2933] mb-2 tracking-tight">{name}</h2>
+                <h2 className="text-3xl font-black text-[#1F2933] mb-1 tracking-tight">{name}</h2>
+                <p className="text-gray-500 font-medium text-sm mb-2">{profile?.email}</p>
                 <p className="text-[#6F7BF7] font-black uppercase tracking-[0.2em] text-[10px] mb-8">{role}</p>
               </>
             )}
@@ -215,9 +226,9 @@ export default function Profile() {
 
             <div className="grid grid-cols-3 gap-4 mb-2">
               {[
-                { label: "Sessions", value: "32" },
-                { label: "Hours", value: "4.4" },
-                { label: "Streak", value: "7d" },
+                { label: "Sessions", value: String(profile?.total_sessions ?? 0) },
+                { label: "Minutes", value: String(profile?.total_minutes ?? 0) },
+                { label: "Streak", value: `${profile?.current_streak ?? 0}d` },
               ].map((s) => (
                 <div key={s.label} className="p-4 rounded-3xl bg-gray-50/50">
                   <p className="text-[#1F2933] text-xl font-black leading-tight">{s.value}</p>
@@ -239,23 +250,6 @@ export default function Profile() {
 
         {/* Right Column: Dash Content */}
         <div className="lg:w-2/3 space-y-10">
-          {/* Achievements section */}
-          <section>
-            <h2 className="text-2xl font-black text-[#1F2933] mb-6">Achievements</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {achievements.map((a) => (
-                <div
-                  key={a.label}
-                  className={`p-6 rounded-[32px] border transition-all duration-300 ${a.unlocked ? 'bg-white border-gray-100 shadow-sm hover:shadow-xl group' : 'bg-gray-50 border-transparent opacity-40'}`}
-                >
-                  <div className="text-4xl mb-4 group-hover:scale-125 transition-transform duration-500">{a.emoji}</div>
-                  <p className="font-black text-[#1F2933] leading-tight text-sm tracking-tight">{a.label}</p>
-                  {a.unlocked && <p className="text-[#4AAFA9] text-[9px] font-black tracking-widest uppercase mt-1">UNLOCKED</p>}
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* Account Settings */}
           <section>
             <h2 className="text-2xl font-black text-[#1F2933] mb-6">Account Settings</h2>

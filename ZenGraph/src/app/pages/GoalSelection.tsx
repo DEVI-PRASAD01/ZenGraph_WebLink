@@ -31,7 +31,7 @@ export default function GoalSelection() {
       const selectedLabel = goals.find(g => g.id === selected)?.label || "";
 
       await sessionApi.selectGoal(userId, selectedLabel);
-      sessionStorage.setItem("zg_goal", selectedLabel);
+      sessionStorage.setItem("zg_goal", selected); // stores "stress", "focus", "sleep" etc.
       navigate("/session/experience");
     } catch (err) {
       console.error("Failed to save goal:", err);

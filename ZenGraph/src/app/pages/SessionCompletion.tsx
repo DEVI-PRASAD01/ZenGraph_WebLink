@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { CheckCircle2, Clock, Flame, Star } from "lucide-react";
-import { sessionApi } from "../services/sessionApi";
+
 import { useEffect } from "react";
 
 export default function SessionCompletion() {
@@ -9,9 +9,7 @@ export default function SessionCompletion() {
 
   // Mark session as complete when this page mounts
   useEffect(() => {
-    if (sessionId) {
-      sessionApi.complete({ session_id: sessionId }).catch(console.error);
-    }
+    // Session status will be updated after reflection
   }, [sessionId]);
 
   return (
@@ -66,9 +64,9 @@ export default function SessionCompletion() {
         <div className="space-y-8">
           <div className="grid grid-cols-3 gap-6">
             {[
-              { icon: Clock, label: "Duration", value: "10 min", color: "#6F7BF7", bg: "rgba(111,123,247,0.08)" },
+              { icon: Clock, label: "Duration", value: `${sessionStorage.getItem("zg_actual_mins") ?? sessionStorage.getItem("zg_session_mins") ?? 10} min`, color: "#6F7BF7", bg: "rgba(111,123,247,0.08)" },
               { icon: Flame, label: "Streak", value: "Day +1", color: "#F97316", bg: "rgba(249,115,22,0.08)" },
-              { icon: Star, label: "Score", value: "9.2 / 10", color: "#EAB308", bg: "rgba(234,179,8,0.08)" },
+              { icon: Star, label: "Score", value: `${sessionStorage.getItem("zg_rec_score") ?? 95} / 100`, color: "#EAB308", bg: "rgba(234,179,8,0.08)" },
             ].map((s) => (
               <div key={s.label}
                 className="flex flex-col items-center p-6 rounded-[32px] border border-gray-100 shadow-sm"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Search, Clock, Loader2, AlertCircle, RefreshCw } from "lucide-react";
-import { libraryApi, libraryPlanApi, sessionApi, sessionHelper, type LibrarySession } from "../services/sessionApi";
+import { libraryApi, sessionApi, sessionHelper, type LibrarySession } from "../services/sessionApi";
 
 const categoryMeta: Record<string, { emoji: string; color: string }> = {
   anxiety: { emoji: "🌊", color: "#EEF0FF" },
@@ -46,28 +46,25 @@ export default function Library() {
 
   const handleStart = async (s: LibrarySession) => {
     setStarting(s.id);
+    setError("");
     try {
-      // ── Step 1: POST /library/generate-plan
-      //    Creates an AIPlan in the DB and returns a real plan_id.
-      const plan = await libraryPlanApi.generate({
-        user_id: userId,
-        title: s.title,
-        duration: s.duration,
-        category: s.category,
-      });
-
-      // ── Step 2: POST /session/start with the real plan_id
       const sessionRecord = await sessionApi.start({
         user_id: userId,
-        plan_id: plan.plan_id,
+        goal: "improve_focus",
+        mood_before: "neutral",
+        experience_level: s.level?.toLowerCase() ?? "beginner",
+        session_name: s.title,
+        duration: s.duration,
+        techniques: s.technique,
+        match_score: 90,
       });
 
-      // Store session info for SessionReady & MeditationPlayer
       sessionStorage.setItem("zg_session_id", String(sessionRecord.session_id));
-      sessionStorage.setItem("zg_session_name", sessionRecord.session_name);
-      sessionStorage.setItem("zg_session_mins", String(sessionRecord.planned_duration));
+      sessionStorage.setItem("zg_session_name", s.title);
+      sessionStorage.setItem("zg_session_mins", String(s.duration));
+      sessionStorage.setItem("zg_emotion", "Neutral");
 
-      navigate("/session/ready");
+      navigate("/session/player");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to start session.");
     } finally {
@@ -87,8 +84,6 @@ export default function Library() {
   const filtered = search
     ? currentCat.filter(s => s.title.toLowerCase().includes(search.toLowerCase()) || s.technique.toLowerCase().includes(search.toLowerCase()))
     : currentCat;
-
-
 
   return (
     <div className="p-8 lg:p-12 max-w-7xl mx-auto flex flex-col gap-10" style={{ fontFamily: "Inter, sans-serif" }}>

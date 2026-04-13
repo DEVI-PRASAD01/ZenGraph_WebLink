@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { GradientButton } from "../components/zen/ZenComponents";
 import { ChevronLeft, Loader2 } from "lucide-react";
-import { sessionApi, sessionHelper } from "../services/sessionApi";
+import { authApi, sessionHelper } from "../services/sessionApi";
 
 const levels = [
   {
@@ -38,10 +38,13 @@ export default function Experience() {
     if (!selected) return;
     setLoading(true);
     try {
-      // The backend expects labels like "Beginner", "Intermediate", "Advanced"
       const selectedLevel = levels.find(l => l.id === selected)?.label || "Beginner";
-
-      await sessionApi.selectExperience(userId, selectedLevel);
+      const goal = sessionStorage.getItem("zg_goal") || "Reduce Stress";
+      await authApi.saveGoal({
+        user_id: userId,
+        goal_type: goal,
+        experience: selectedLevel
+      });
       sessionStorage.setItem("zg_experience", selectedLevel);
       navigate("/session/mood");
     } catch (err) {

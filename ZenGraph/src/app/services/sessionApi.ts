@@ -4,6 +4,7 @@ export interface RecommendPlanResponse {
     meditation_type: string;
     session_name: string;
     duration: number;
+    technique: string;
     guidance_style: string;
     message: string;
     match_score: number;
@@ -23,8 +24,13 @@ export interface AIPlan {
 export interface SessionRecord {
     status: string;
     session_id: number;
-    session_name: string;
-    planned_duration: number;
+    session: {
+        id: number;
+        session_name: string;
+        duration_minutes: number;
+        mood_before: string;
+        experience_level: string;
+    };
 }
 
 export interface UserStats {
@@ -66,6 +72,19 @@ export interface EmotionPoint {
     score: number;
 }
 
+export interface HistoryItem {
+    id: number;
+    session_name: string;
+    goal: string;
+    mood_before: string;
+    mood_after: string;
+    duration_minutes: number;
+    experience_level: string;
+    status: string;
+    started_at: string;
+    completed_at: string | null;
+}
+
 export type CompletionMap = Record<string, number>;
 
 export interface ProfileData {
@@ -73,6 +92,12 @@ export interface ProfileData {
     name: string;
     email: string;
     profile_image: string | null;
+
+    // ✅ FIX ADDED HERE (ONLY CHANGE)
+    total_sessions?: number;
+    total_minutes?: number;
+    current_streak?: number;
+
     enable_notifications: boolean;
     data_sharing_consent: boolean;
 }
@@ -129,6 +154,23 @@ export interface EmotionRequest {
     thought?: string;
 }
 
+export interface CompleteSessionRequest {
+    mood_after: string;
+    actual_duration?: number;
+    notes?: string;
+}
+
+export interface StartSessionRequest {
+    user_id: number;
+    goal: string;
+    mood_before: string;
+    experience_level: string;
+    session_name: string;
+    duration: number;
+    techniques: string;
+    match_score: number;
+}
+
 export interface EmotionResponse {
     status: string;
     message: string;
@@ -171,25 +213,17 @@ export const authApi = {
 
     getDashboard: (userId: number): Promise<DashboardData> =>
         api.get(`/auth/dashboard/${userId}`),
+
+    saveGoal: (data: { user_id: number; goal_type: string; experience: string }) =>
+        api.post("/auth/save-goal", data),
+
+    getGoal: (userId: number) =>
+        api.get(`/auth/get-goal/${userId}`),
 };
 
 export const recommendationApi = {
     generate(data: RecommendPlanRequest): Promise<RecommendPlanResponse> {
         return api.post("/ai/recommend-plan", data);
-    },
-};
-
-export const planApi = {
-    get(userId: number): Promise<AIPlan[]> {
-        return api.get(`/plan/${userId}`);
-    },
-    generate(data: {
-        user_id: number;
-        goal: string;
-        mood: string;
-        level: string;
-    }): Promise<AIPlan> {
-        return api.post("/ai/generate-plan", data);
     },
 };
 
@@ -208,32 +242,24 @@ export const sessionApi = {
         });
     },
 
-    selectExperience(userId: number, level: string) {
-        return api.post("/session/experience/select", {
-            user_id: userId,
-            experience_level: level,
-        });
-    },
-
-    start(data: {
-        user_id: number;
-        plan_id: number;
-    }): Promise<SessionRecord> {
+    start(data: StartSessionRequest): Promise<SessionRecord> {
         return api.post("/session/start", data);
     },
 
-    startLibrary(data: {
-        user_id: number;
-        title: string;
-        duration: number;
-    }) {
-        return api.post("/session/start-library-session", data);
+    complete(sessionId: number, data: CompleteSessionRequest) {
+        return api.post(`/session/complete/${sessionId}`, data);
     },
 
-    complete(data: {
-        session_id: number;
-    }) {
-        return api.post("/session/complete", data);
+    pause(sessionId: number) {
+        return api.post(`/session/pause/${sessionId}`, {});
+    },
+
+    resume(sessionId: number) {
+        return api.post(`/session/resume/${sessionId}`, {});
+    },
+
+    history(userId: number): Promise<{ status: string; sessions: HistoryItem[] }> {
+        return api.get(`/session/history/${userId}`);
     },
 
     stats(userId: number): Promise<UserStats> {
@@ -294,8 +320,12 @@ export const aiEmotionApi = {
 };
 
 export const sessionAnalysisApi = {
-    get(sessionId: number): Promise<SessionAnalysis> {
-        return api.get(`/session_analysis/${sessionId}`);
+    analyze(data: {
+        pre_emotion: string;
+        post_mood: string;
+        duration: number;
+    }): Promise<SessionAnalysis> {
+        return api.post(`/session-analysis/analyze`, data);
     },
 };
 
@@ -308,6 +338,12 @@ export const analyticsApi = {
 
     completionMap: (userId: number) =>
         api.get(`/analytics/completion/${userId}`),
+
+    moodWeek: (userId: number) =>
+        api.get(`/analytics/mood-week/${userId}`),
+
+    moodHistory: (userId: number): Promise<{ status: string; history: { mood: number; date: string }[] }> =>
+        api.get(`/analytics/mood-history/${userId}`),
 };
 
 export const profileApi = {

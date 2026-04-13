@@ -18,6 +18,8 @@ import Library from "./pages/Library";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import FriendStreak from "./pages/FriendStreak";
+import History from "./pages/History";
 
 
 // Session Flow
@@ -60,6 +62,8 @@ export const router = createBrowserRouter([
           { path: "analytics", Component: Analytics },
           { path: "profile", Component: Profile },
           { path: "settings", Component: Settings },
+          { path: "friends", Component: FriendStreak },
+          { path: "history", Component: History },
         ],
       },
 

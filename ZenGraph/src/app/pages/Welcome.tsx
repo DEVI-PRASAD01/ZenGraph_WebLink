@@ -480,7 +480,7 @@ export default function Welcome() {
             Be among the first to experience the future of AI-powered mindfulness.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-            {["Personalized AI sessions", "Zen Pro features", "Cancel anytime"].map((f) => (
+            {["Personalized AI sessions", "Expert guidance", "Unlimited access"].map((f) => (
               <div key={f} className="flex items-center gap-1.5">
                 <CheckCircle2 size={16} style={{ color: "rgba(255,255,255,0.8)" }} />
                 <span style={{ color: "rgba(255,255,255,0.9)", fontSize: "14px" }}>{f}</span>
